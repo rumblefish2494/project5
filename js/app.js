@@ -7,7 +7,7 @@ var model = {
 				lat: 39.5579311,
 				lng: -119.8508414
 			},
-			zoom: 8
+			zoom: 12
 		}
 	},
 
@@ -35,33 +35,38 @@ var squid = {
 		return model.area.coordinates;
 	}
 };
-var viewModel = {
-	render: function() {
-	this.places = ko.observableArray([]);
-	},
-	init: function() {
+var viewModel = function (){
+	var self = this;
+	this.places = ko.observableArray(model.places);
 
-	}
+	this.places().forEach(function(place){
+		$('.bindMe').append('<li data-bind=' + '"' + 'restaurant' +'"' + '>' + place.name + '</li>');
+
+		console.log(place);
+
+	});
+	//console.log(self.places()[0]);
+
+};
+var init = function() {
+	initializeMap();
+	//viewModel();
+
 };
 
-//ko.applyBindings(new viewModel());
 
-function initialize() {
-		    console.log('in initialize');
+ko.applyBindings(viewModel);
 
-		    var mapOptions = squid.getCoordinates();
-		    console.log(mapOptions);
-		 	var map = new google.maps.Map(document.getElementById('map-canvas'),
-		            mapOptions);
-		 	$('#map-canvas').append(map);
+function initializeMap() {
+	var mapOptions = squid.getCoordinates();
+	var map = new google.maps.Map(document.getElementById('map-canvas'),
+		         mapOptions);
+	$('#map-canvas').append(map);
+
 };
 
-/*window.onload = function() {
-	console.log('in onload');
-	initialize();
-};*/
-$().ready(initialize);
-//window.addEventListener('ready', initialize);
-//google.maps.event.addDomListener(window, 'load', initialize);
+//initialize google map
+$().ready(init);
+
 
 
