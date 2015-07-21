@@ -39,6 +39,8 @@ var viewModel = function (){
 	var self = this;
 	this.inputFilter = ko.observable("");
 	this.filterList = ko.observable("");
+
+	console.log(this.filterList());
 	this.displayRestaurant = ko.observable(true);
 	this.filterText = ko.observable("");
 	this.places = ko.observableArray(model.places);
@@ -53,7 +55,8 @@ var viewModel = function (){
 	//process inpuf from search box to filter through restaurants
 	this.filterRestaurant = function() {
 		console.log('search activated: ' + self.filterText());
-		return true;
+		//return true;
+
 	};
 
 };
