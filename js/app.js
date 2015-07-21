@@ -37,15 +37,24 @@ var squid = {
 };
 var viewModel = function (){
 	var self = this;
+	this.inputFilter = ko.observable("");
+	this.filterList = ko.observable("");
+	this.displayRestaurant = ko.observable(true);
+	this.filterText = ko.observable("");
 	this.places = ko.observableArray(model.places);
-
 	this.places().forEach(function(place){
-		$('.bindMe').append('<li data-bind=' + '"' + 'restaurant' +'"' + '>' + place.name + '</li>');
-
-		console.log(place);
-
+		//console.log(self.places.indexOf(place));
+		$('.bindMe').append('<li data-bind=' + '"' + 'visible: displayRestaurant'  +'"' + '>' + place.name + '</li>');
 	});
 	//console.log(self.places()[0]);
+	this.displayRestaurant = function() {
+
+	};
+	//process inpuf from search box to filter through restaurants
+	this.filterRestaurant = function() {
+		console.log('search activated: ' + self.filterText());
+		return true;
+	};
 
 };
 var init = function() {

@@ -37,9 +37,9 @@
 	<div class='container'>
 		<div class='row'>
 			<div class='searchArea col-md-12'>
-				<form>
+				<form data-bind='submit: filterList'>
 					Search:<br>
-					<input type="text">
+					<input type="text" data-bind="textInput: filterText, event: {keypress: filterRestaurant}">
 				</form>
 			</div>
 		</div>
