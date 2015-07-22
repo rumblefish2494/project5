@@ -37,25 +37,36 @@ var squid = {
 };
 var viewModel = function (){
 	var self = this;
-	this.inputFilter = ko.observable("");
-	this.filterList = ko.observable("");
 
-	console.log(this.filterList());
-	this.displayRestaurant = ko.observable(true);
 	this.filterText = ko.observable("");
 	this.places = ko.observableArray(model.places);
-	this.places().forEach(function(place){
-		//console.log(self.places.indexOf(place));
-		$('.bindMe').append('<li data-bind=' + '"' + 'visible: displayRestaurant'  +'"' + '>' + place.name + '</li>');
-	});
-	//console.log(self.places()[0]);
-	this.displayRestaurant = function() {
 
+	//add a visible switch to obsevrable array
+	this.places().forEach(function(place){
+		place.showRestaurant = ko.observable(true);
+	});
+
+	//	$('.bindMe').append('<li data-bind=' + '"' + 'visible: displayRestaurant'  +'"' + '>' + place.name + '</li>');
+	//console.log(self.places()[0]);
+	this.displayRestaurant = function(string) {
+		console.log('search activated: ' + self.filterText());
 	};
 	//process inpuf from search box to filter through restaurants
 	this.filterRestaurant = function() {
-		console.log('search activated: ' + self.filterText());
+
+		this.places().forEach(function(place){
+			if( place.name.indexOf(self.filterText()) == 0 ) {
+				place.showRestaurant(true);
+				console.log(place);
+			}
+			else {
+				place.showRestaurant(false);
+				//console.log(place);
+				console.log(place.name.indexOf(self.filterText()));
+			};
+		})
 		//return true;
+		self.displayRestaurant(self.filterText());
 
 	};
 
