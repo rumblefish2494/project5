@@ -33,8 +33,12 @@ var model = {
 var squid = {
 	getCoordinates: function() {
 		return model.area.coordinates;
+	},
+	getLocations: function() {
+		return model.places;
 	}
 };
+
 var viewModel = function (){
 	var self = this;
 	var uppercaseName;
@@ -46,51 +50,62 @@ var viewModel = function (){
 	this.places().forEach(function(place){
 		place.showRestaurant = ko.observable(true);
 	});
-
 	//	$('.bindMe').append('<li data-bind=' + '"' + 'visible: displayRestaurant'  +'"' + '>' + place.name + '</li>');
 	//console.log(self.places()[0]);
 	this.displayRestaurant = function(string) {
 		console.log('search activated: ' + self.filterText());
 	};
-	//process inpuf from search box to filter through restaurants
+	//process input form search box to filter through restaurants
 	this.filterRestaurant = function() {
-
 		this.places().forEach(function(place){
 			uppercaseName = place.name.toUpperCase();
 			if( uppercaseName.indexOf(self.filterText().toUpperCase()) == 0) {
 				place.showRestaurant(true);
-				console.log(place);
+				//console.log(place);
 			}
 			else {
 				place.showRestaurant(false);
-
 			};
-		})
-		//return true;
-		self.displayRestaurant(self.filterText());
-
+		});
 	};
-
-};
-var init = function() {
-	initializeMap();
-	//viewModel();
-
 };
 
-
-ko.applyBindings(viewModel);
-
+//ko.applyBindings(viewModel);
+//initialize google map using model coordinates
+var markers = [];
+var marker;
+var geocoder;
+var map
 function initializeMap() {
 	var mapOptions = squid.getCoordinates();
-	var map = new google.maps.Map(document.getElementById('map-canvas'),
+	geocoder = new google.maps.Geocoder();
+	map = new google.maps.Map(document.getElementById('map-canvas'),
 		         mapOptions);
 	$('#map-canvas').append(map);
+	getMarkers();
 
 };
 
+function getMarkers(){
+	var locations = squid.getLocations();
+	locations.forEach(function(location) {
+		geocoder.geocode( { 'address': location.address}, function(results, status) {
+		    if (status == google.maps.GeocoderStatus.OK) {
+		      	marker = new google.maps.Marker({
+		            map: map,
+		            position: results[0].geometry.location
+		        });
+		        markers.push(marker);
+		    } else {
+		        alert("Geocode was not successful for the following reason: " + status);
+		    }
+        });
+	});
+};
+
+
 //initialize google map
-$().ready(init);
+$().ready(initializeMap, ko.applyBindings(viewModel));
 
 
 
