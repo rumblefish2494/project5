@@ -37,6 +37,7 @@ var squid = {
 };
 var viewModel = function (){
 	var self = this;
+	var uppercaseName;
 
 	this.filterText = ko.observable("");
 	this.places = ko.observableArray(model.places);
@@ -55,14 +56,14 @@ var viewModel = function (){
 	this.filterRestaurant = function() {
 
 		this.places().forEach(function(place){
-			if( place.name.indexOf(self.filterText()) == 0 ) {
+			uppercaseName = place.name.toUpperCase();
+			if( uppercaseName.indexOf(self.filterText().toUpperCase()) == 0) {
 				place.showRestaurant(true);
 				console.log(place);
 			}
 			else {
 				place.showRestaurant(false);
-				//console.log(place);
-				console.log(place.name.indexOf(self.filterText()));
+
 			};
 		})
 		//return true;
