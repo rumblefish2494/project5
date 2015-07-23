@@ -38,9 +38,13 @@ var squid = {
 	getLocations: function() {
 		return model.places;
 	},
-	addMarker: function(marker, index) {
-		console.log(marker + index);
+	addMarker: function(marker, infoWindow, index) {
+		console.log(marker + infoWindow + index);
 		model.places[index].marker = marker;
+		model.places[index].infoWindow = infoWindow;
+	},
+	addInfo: function(info, index) {
+
 	}
 };
 
@@ -48,6 +52,7 @@ var squid = {
 var viewModel = function (){
 	var self = this;
 	var uppercaseName;
+
 
 	self.filterText = ko.observable("");
 	self.places = ko.observableArray(model.places);
@@ -68,7 +73,9 @@ var viewModel = function (){
 			if( uppercaseName.indexOf(self.filterText().toUpperCase()) == 0) {
 				place.showRestaurant(true);
 				place.marker.setMap(map);
+				console.log(place);
 				//place.marker.setAnimation(google.maps.Animation.BOUNCE);
+
 				console.log(place);
 			}
 			else {
@@ -83,6 +90,7 @@ var viewModel = function (){
 	self.showDetails = function(data) {
 
 		data.marker.setAnimation(google.maps.Animation.BOUNCE);
+		data.infoWindow.open(map, data.marker);
 		//$(element).addClass('highlight');
 		//console.log('element');
 		//console.log('in showDetails');
@@ -91,12 +99,13 @@ var viewModel = function (){
 	self.hideDetails = function(data, element) {
 		//alert('out of showRestaurant');
 		data.marker.setAnimation(null);
+		data.infoWindow.close(map, data.marker);
 	};
 };
 
 
 //initialize google map using model coordinates
-var markers = [];
+//var markers = [];
 var geocoder;
 var map
 function initializeMap() {
@@ -120,8 +129,12 @@ function getMarkers(){
 		            animation: google.maps.Animation.DROP,
 		            title: location.name
 		        });
+
+		         var infowindow = new google.maps.InfoWindow({
+      				content: ''
+  				});
 		        //markers.push(marker);
-		        squid.addMarker(marker, index);
+		        squid.addMarker(marker, infowindow, index);
 		    } else {
 		        alert("Geocode was not successful for the following reason: " + status);
 		    }
@@ -129,7 +142,7 @@ function getMarkers(){
 	});
 };
 
-function filterMarkers() {
+function createInfo() {
 
 };
 
