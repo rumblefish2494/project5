@@ -30,14 +30,20 @@ var model = {
 	]
 };
 
+//used for maps to query model etc.
 var squid = {
 	getCoordinates: function() {
 		return model.area.coordinates;
 	},
 	getLocations: function() {
 		return model.places;
+	},
+	addMarker: function(marker, index) {
+		console.log(marker + index);
+		model.places[index].marker = marker;
 	}
 };
+
 
 var viewModel = function (){
 	var self = this;
@@ -61,19 +67,21 @@ var viewModel = function (){
 			uppercaseName = place.name.toUpperCase();
 			if( uppercaseName.indexOf(self.filterText().toUpperCase()) == 0) {
 				place.showRestaurant(true);
-				//console.log(place);
+				place.marker.setMap(map);
+				console.log(place);
 			}
 			else {
 				place.showRestaurant(false);
+				place.marker.setMap(null);
+				console.log(place);
 			};
 		});
 	};
 };
 
-//ko.applyBindings(viewModel);
+
 //initialize google map using model coordinates
 var markers = [];
-var marker;
 var geocoder;
 var map
 function initializeMap() {
@@ -88,19 +96,25 @@ function initializeMap() {
 
 function getMarkers(){
 	var locations = squid.getLocations();
-	locations.forEach(function(location) {
+	locations.forEach(function(location, index){
 		geocoder.geocode( { 'address': location.address}, function(results, status) {
 		    if (status == google.maps.GeocoderStatus.OK) {
-		      	marker = new google.maps.Marker({
+		      	var marker = new google.maps.Marker({
 		            map: map,
-		            position: results[0].geometry.location
+		            position: results[0].geometry.location,
+		            title: location.name
 		        });
-		        markers.push(marker);
+		        //markers.push(marker);
+		        squid.addMarker(marker, index);
 		    } else {
 		        alert("Geocode was not successful for the following reason: " + status);
 		    }
         });
 	});
+};
+
+function filterMarkers() {
+
 };
 
 
