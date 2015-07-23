@@ -49,33 +49,48 @@ var viewModel = function (){
 	var self = this;
 	var uppercaseName;
 
-	this.filterText = ko.observable("");
-	this.places = ko.observableArray(model.places);
+	self.filterText = ko.observable("");
+	self.places = ko.observableArray(model.places);
 
 	//add a visible switch to obsevrable array
-	this.places().forEach(function(place){
+	self.places().forEach(function(place){
 		place.showRestaurant = ko.observable(true);
 	});
 	//	$('.bindMe').append('<li data-bind=' + '"' + 'visible: displayRestaurant'  +'"' + '>' + place.name + '</li>');
 	//console.log(self.places()[0]);
-	this.displayRestaurant = function(string) {
+	self.displayRestaurant = function(string) {
 		console.log('search activated: ' + self.filterText());
 	};
 	//process input form search box to filter through restaurants
-	this.filterRestaurant = function() {
+	self.filterRestaurant = function() {
 		this.places().forEach(function(place){
 			uppercaseName = place.name.toUpperCase();
 			if( uppercaseName.indexOf(self.filterText().toUpperCase()) == 0) {
 				place.showRestaurant(true);
 				place.marker.setMap(map);
+				//place.marker.setAnimation(google.maps.Animation.BOUNCE);
 				console.log(place);
 			}
 			else {
 				place.showRestaurant(false);
 				place.marker.setMap(null);
+				//place.marker.setAnimation(null);
 				console.log(place);
 			};
 		});
+	};
+
+	self.showDetails = function(data) {
+
+		data.marker.setAnimation(google.maps.Animation.BOUNCE);
+		//$(element).addClass('highlight');
+		//console.log('element');
+		//console.log('in showDetails');
+
+	};
+	self.hideDetails = function(data, element) {
+		//alert('out of showRestaurant');
+		data.marker.setAnimation(null);
 	};
 };
 
@@ -102,6 +117,7 @@ function getMarkers(){
 		      	var marker = new google.maps.Marker({
 		            map: map,
 		            position: results[0].geometry.location,
+		            animation: google.maps.Animation.DROP,
 		            title: location.name
 		        });
 		        //markers.push(marker);
