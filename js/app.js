@@ -47,10 +47,10 @@ var squid = {
 	getLocations: function() {
 		return model.places;
 	},
-	addMarker: function(marker, infoWindow, index) {
-		console.log(marker + infoWindow + index);
+	addMarker: function(marker, infowindow, index) {
+		//console.log(marker + infoWindow + index);
 		model.places[index].marker = marker;
-		model.places[index].infoWindow = infoWindow;
+		model.places[index].infowindow = infowindow;
 	},
 	addInfo: function(info, index) {
 
@@ -62,7 +62,9 @@ var viewModel = function (){
 	var self = this;
 	var uppercaseName;
 	var ymd = model.date();
-	console.log(ymd);
+
+	//for infoWindow used in showDetails()
+	var iwContent;
 
 
 	self.filterText = ko.observable("");
@@ -110,17 +112,20 @@ var viewModel = function (){
 
 	self.showDetails = function(data) {
 
+		console.log(data.infowindow.content);
 		data.marker.setAnimation(google.maps.Animation.BOUNCE);
-		data.infoWindow.open(map, data.marker);
-		//$(element).addClass('highlight');
-		//console.log('element');
-		//console.log('in showDetails');
+		data.infowindow.content = '<div id="content">' + '<h4 class="heading">' + data.name + '</h4></div>';
+		console.log(data.infowindow.content);
+		data.infowindow.open(map, data.marker);
+
 
 	};
 	self.hideDetails = function(data, element) {
+
 		//alert('out of showRestaurant');
+
 		data.marker.setAnimation(null);
-		data.infoWindow.close(map, data.marker);
+		data.infowindow.close(map, data.marker);
 	};
 };
 
@@ -128,7 +133,8 @@ var viewModel = function (){
 //initialize google map using model coordinates
 //var markers = [];
 var geocoder;
-var map
+var map;
+var infowindow;
 function initializeMap() {
 	var mapOptions = squid.getCoordinates();
 	geocoder = new google.maps.Geocoder();
@@ -149,18 +155,20 @@ function getMarkers(){
 		            position: results[0].geometry.location,
 		            animation: google.maps.Animation.DROP,
 		            title: location.name
+				});
+
+		        var infowindow = new google.maps.InfoWindow({
+      				content: ''
+
 		        });
 
-		         var infowindow = new google.maps.InfoWindow({
-      				content: ''
-  				});
-		        //markers.push(marker);
 		        squid.addMarker(marker, infowindow, index);
 		    } else {
 		        alert("Geocode was not successful for the following reason: " + status);
-		    }
+		    };
         });
 	});
+
 };
 
 function createInfo() {
