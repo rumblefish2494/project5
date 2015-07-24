@@ -1,4 +1,12 @@
 var model = {
+	//get yyyymmdd for foursquare versioning api request
+	date: function() {
+		var today = new Date();
+		year = today.getFullYear().toString();
+		day = today.getDate() < 10 ? '0' + today.getDate().toString() : today.getDate().toString();
+		month = today.getMonth() < 10 ? '0' + today.getMonth().toString() : today.getMonth().toString();;
+		return year + month + day;
+	},
 	area: {
 		city: 'Reno',
 		state: 'Nevada',
@@ -30,7 +38,8 @@ var model = {
 	]
 };
 
-//used for maps to query model etc.
+//controller used for maps - model interfacing etc.
+//udacity webcast said not to try to wrap map in knockout
 var squid = {
 	getCoordinates: function() {
 		return model.area.coordinates;
@@ -52,6 +61,8 @@ var squid = {
 var viewModel = function (){
 	var self = this;
 	var uppercaseName;
+	var ymd = model.date();
+	console.log(ymd);
 
 
 	self.filterText = ko.observable("");
@@ -61,11 +72,11 @@ var viewModel = function (){
 	self.places().forEach(function(place){
 		place.showRestaurant = ko.observable(true);
 	});
-	//	$('.bindMe').append('<li data-bind=' + '"' + 'visible: displayRestaurant'  +'"' + '>' + place.name + '</li>');
-	//console.log(self.places()[0]);
+
 	self.displayRestaurant = function(string) {
 		console.log('search activated: ' + self.filterText());
 	};
+
 	//process input form search box to filter through restaurants
 	self.filterRestaurant = function() {
 		this.places().forEach(function(place){
@@ -75,15 +86,25 @@ var viewModel = function (){
 				place.marker.setMap(map);
 				console.log(place);
 				//place.marker.setAnimation(google.maps.Animation.BOUNCE);
-
-				console.log(place);
 			}
 			else {
 				place.showRestaurant(false);
 				place.marker.setMap(null);
 				//place.marker.setAnimation(null);
-				console.log(place);
 			};
+		});
+	};
+
+	self.showFourSquare = function(place) {
+		console.log('inFourSquare!');
+		console.log(place);
+
+		var queryTextPreamble = 'https://api.foursquare.com/v2/venues/search?query=';
+		var clientIdSecret = '&client_id=5GCBYWBXFXKG2X0KPKQE4YLOBPD2PYX1RRRE11EGRDG41WBW&client_secret=JQGGN4IDCCFZZW1A4HQFY513DIC4N3AJETVXVK0ZNFBLPLYA'
+		var yyyymmdd = '&v=' + ymd;
+		$.getJSON( queryTextPreamble + place.name + '&near=' + place.address + clientIdSecret
+			+ yyyymmdd, function(data){
+			console.log(data);
 		});
 	};
 
