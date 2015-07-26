@@ -124,45 +124,55 @@ var viewModel = function (){
 		var fourSquareVenueId;
 
 		//ajax get foursquare venu ID in order to obtaen complete venue information object
-		$.getJSON( queryTextPreamble + place.name + '&near=' + place.address + '&intent=match' + clientIdSecret
-			       + yyyymmdd, success = function(data) {
-			fourSquareVenueId = data.response.venues[0].id + '?';
-			console.log( fourSquareVenueId );
-			//use venue id to run ajax request for complete venue information
-			//this is the only way to get photos from foursquare
-			//venue search returns compact object that does not contain photos
-			$.getJSON( venueTextPreamble + fourSquareVenueId + clientIdSecret
-						+ yyyymmdd, success = function(data){
-				console.log(data);
-				venue = data.response.venue;
+		$.ajax({
+			url: queryTextPreamble + place.name + '&near=' + place.address + '&intent=match' + clientIdSecret
+			       + yyyymmdd,
+			dataType: 'json',
+			success: function(data) {
+				fourSquareVenueId = data.response.venues[0].id + '?',
 
-				if( 'menu' in venue ) {
-					menuUrl(venue.menu.url);
-					menuText( place.name.toString() + ' Menu' );
-				} else {
-					menuUrl('');
-					menuText( 'No menu registered on FourSquare' );
-				};
+				$.ajax({
 
-				if('bestPhoto' in venue ) {
-					img(venue.bestPhoto.prefix + '350x275' + venue.bestPhoto.suffix);
-				} else {
-					img('No Image');
-				}
+					url: venueTextPreamble + fourSquareVenueId + clientIdSecret
+							+ yyyymmdd,
+					dataType: 'json',
+					success: function(data){
+						console.log(data);
+						venue = data.response.venue;
 
-				if('url' in venue ){
-					console.log('it says so');
-					websiteUrl(venue.url);
-					websiteText('Website');
-				} else {
-					websiteUrl('');
-					websiteText('No website registered on FourSquare');
-				};
-				restaurantName(venue.name);
+						if( 'menu' in venue ) {
+							menuUrl(venue.menu.url);
+							menuText( place.name.toString() + ' Menu' );
+						} else {
+							menuUrl('');
+							menuText( 'No menu registered on FourSquare' );
+						};
 
-				}, error = function(){
+						if('bestPhoto' in venue ) {
+							img(venue.bestPhoto.prefix + '350x275' + venue.bestPhoto.suffix);
+						} else {
+							img('No Image');
+						}
+
+						if('url' in venue ){
+							console.log('it says so');
+							websiteUrl(venue.url);
+							websiteText('Website');
+						} else {
+							websiteUrl('');
+							websiteText('No website registered on FourSquare');
+						};
+						restaurantName(venue.name);
+					},
+					error: function(){
+						console.log('foursquare not available');
+					}
+				});
+			},
+
+			error: function(){
 					console.log('foursquare not available');
-			});
+			}
 		});
 	};
 
