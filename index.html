@@ -43,7 +43,7 @@
 
     <!--script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script-->
 	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
+	<script src="node_modules/oauth-signature/dist/oauth-signature.js"></script>
 </head>
 <body>
 	<div class='container'>
@@ -58,10 +58,14 @@
 		<div class='row map'>
 			<div class='listArea col-md-2'>
 				<ul class='bindMe' data-bind='foreach: places'>
-					<li data-bind='text: name, visible: $data.showRestaurant, event: {mouseover: showDetails, mouseout: hideDetails}, click: showFourSquare'></li>
+					<li data-bind='text: name, visible: $data.showRestaurant, event: {mouseover: showMarkerWindow, mouseout: hideMarkerWindow}, click: displayDetails'></li>
 				</ul>
 			</div>
-			<div class='col-md-4'>
+			<div class='col-md-4 details' data-bind='img'>
+				<img class='siteImage' data-bind='attr: { src: img }'>
+				<h2 data-bind='text: restaurantName'></h2>
+				<a id='link' data-bind='text: websiteText, attr: { href: websiteUrl }' target='_blank'></a><br>
+				<a id='link' data-bind='text: menuText, attr: { href: menuUrl }' target='_blank'></a>
 			</div>
 			<div class='map col-md-6'>
 				<div id='map-canvas'></div><!--put map here-->

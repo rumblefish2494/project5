@@ -34,7 +34,23 @@ var model = {
 			name: 'LuLou'+"'s",
 			address: '1470 S Virginia St, Reno, NV',
 			phone: '775.329.9979'
+		},
+		{
+			name: 'Reef Sushi',
+			address: '50 N Sierra St, Reno, NV',
+			phone: '775.800.1388'
+		},
+		{
+			name: '4th St. Bistro',
+			address: '3065 W 4th St, Reno, NV',
+			phone: '775.323.3200'
+		},
+		{
+			name: 'Sup Restaurant',
+			address: '669 S Virginia St, Reno, NV',
+			phone: '775.324.4787'
 		}
+
 	]
 };
 
@@ -57,7 +73,6 @@ var squid = {
 	}
 };
 
-
 var viewModel = function (){
 	var self = this;
 	var uppercaseName;
@@ -66,7 +81,14 @@ var viewModel = function (){
 	//for infoWindow used in showDetails()
 	var iwContent;
 
-
+	self.venue;
+	self.img = ko.observable('');
+	self.photos = [];
+	self.restaurantName = ko.observable('');
+	self.menuUrl = ko.observable('');
+	self.menuText = ko.observable('');
+	self.websiteUrl = ko.observable('');
+	self.websiteText = ko.observable('');
 	self.filterText = ko.observable("");
 	self.places = ko.observableArray(model.places);
 
@@ -74,10 +96,6 @@ var viewModel = function (){
 	self.places().forEach(function(place){
 		place.showRestaurant = ko.observable(true);
 	});
-
-	self.displayRestaurant = function(string) {
-		console.log('search activated: ' + self.filterText());
-	};
 
 	//process input form search box to filter through restaurants
 	self.filterRestaurant = function() {
@@ -87,30 +105,68 @@ var viewModel = function (){
 				place.showRestaurant(true);
 				place.marker.setMap(map);
 				console.log(place);
-				//place.marker.setAnimation(google.maps.Animation.BOUNCE);
 			}
 			else {
 				place.showRestaurant(false);
 				place.marker.setMap(null);
-				//place.marker.setAnimation(null);
 			};
 		});
 	};
 
-	self.showFourSquare = function(place) {
+	self.displayDetails = function(place) {
 		console.log('inFourSquare!');
 		console.log(place);
 
 		var queryTextPreamble = 'https://api.foursquare.com/v2/venues/search?query=';
-		var clientIdSecret = '&client_id=5GCBYWBXFXKG2X0KPKQE4YLOBPD2PYX1RRRE11EGRDG41WBW&client_secret=JQGGN4IDCCFZZW1A4HQFY513DIC4N3AJETVXVK0ZNFBLPLYA'
+		var venueTextPreamble = 'https://api.foursquare.com/v2/venues/';
+		var clientIdSecret = '&client_id=5GCBYWBXFXKG2X0KPKQE4YLOBPD2PYX1RRRE11EGRDG41WBW&client_secret=JQGGN4IDCCFZZW1A4HQFY513DIC4N3AJETVXVK0ZNFBLPLYA';
 		var yyyymmdd = '&v=' + ymd;
-		$.getJSON( queryTextPreamble + place.name + '&near=' + place.address + clientIdSecret
-			+ yyyymmdd, function(data){
-			console.log(data);
+		var fourSquareVenueId;
+
+		//ajax get foursquare venu ID in order to obtaen complete venue information object
+		$.getJSON( queryTextPreamble + place.name + '&near=' + place.address + '&intent=match' + clientIdSecret
+			       + yyyymmdd, success = function(data) {
+			fourSquareVenueId = data.response.venues[0].id + '?';
+			console.log( fourSquareVenueId );
+			//use venue id to run ajax request for complete venue information
+			//this is the only way to get photos from foursquare
+			//venue search returns compact object that does not contain photos
+			$.getJSON( venueTextPreamble + fourSquareVenueId + clientIdSecret
+						+ yyyymmdd, success = function(data){
+				console.log(data);
+				venue = data.response.venue;
+
+				if( 'menu' in venue ) {
+					menuUrl(venue.menu.url);
+					menuText( place.name.toString() + ' Menu' );
+				} else {
+					menuUrl('');
+					menuText( 'No menu registered on FourSquare' );
+				};
+
+				if('bestPhoto' in venue ) {
+					img(venue.bestPhoto.prefix + '350x275' + venue.bestPhoto.suffix);
+				} else {
+					img('No Image');
+				}
+
+				if('url' in venue ){
+					console.log('it says so');
+					websiteUrl(venue.url);
+					websiteText('Website');
+				} else {
+					websiteUrl('');
+					websiteText('No website registered on FourSquare');
+				};
+				restaurantName(venue.name);
+
+				}, error = function(){
+					console.log('foursquare not available');
+			});
 		});
 	};
 
-	self.showDetails = function(data) {
+	self.showMarkerWindow = function(data) {
 
 		console.log(data.infowindow.content);
 		data.marker.setAnimation(google.maps.Animation.BOUNCE);
@@ -120,10 +176,7 @@ var viewModel = function (){
 
 
 	};
-	self.hideDetails = function(data, element) {
-
-		//alert('out of showRestaurant');
-
+	self.hideMarkerWindow = function(data, element) {
 		data.marker.setAnimation(null);
 		data.infowindow.close(map, data.marker);
 	};
@@ -131,7 +184,6 @@ var viewModel = function (){
 
 
 //initialize google map using model coordinates
-//var markers = [];
 var geocoder;
 var map;
 var infowindow;
