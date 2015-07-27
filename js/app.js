@@ -82,6 +82,8 @@ var viewModel = function (){
 	var iwContent;
 
 	self.venue;
+	self.categories = ko.observableArray([]);
+	self.showMe = ko.observable(false);
 	self.img = ko.observable('');
 	self.photos = [];
 	self.restaurantName = ko.observable('');
@@ -104,7 +106,6 @@ var viewModel = function (){
 			if( uppercaseName.indexOf(self.filterText().toUpperCase()) == 0) {
 				place.showRestaurant(true);
 				place.marker.setMap(map);
-				console.log(place);
 			}
 			else {
 				place.showRestaurant(false);
@@ -114,15 +115,12 @@ var viewModel = function (){
 	};
 
 	self.displayDetails = function(place) {
-		console.log('inFourSquare!');
-		console.log(place);
-
 		var queryTextPreamble = 'https://api.foursquare.com/v2/venues/search?query=';
 		var venueTextPreamble = 'https://api.foursquare.com/v2/venues/';
 		var clientIdSecret = '&client_id=5GCBYWBXFXKG2X0KPKQE4YLOBPD2PYX1RRRE11EGRDG41WBW&client_secret=JQGGN4IDCCFZZW1A4HQFY513DIC4N3AJETVXVK0ZNFBLPLYA';
 		var yyyymmdd = '&v=' + ymd;
 		var fourSquareVenueId;
-
+		categories([]);
 		//ajax get foursquare venu ID in order to obtaen complete venue information object
 		$.ajax({
 			url: queryTextPreamble + place.name + '&near=' + place.address + '&intent=match' + clientIdSecret
@@ -130,9 +128,8 @@ var viewModel = function (){
 			dataType: 'json',
 			success: function(data) {
 				fourSquareVenueId = data.response.venues[0].id + '?',
-
+				//once venue ID is obtained run another ajax request to get the complete object for that venue
 				$.ajax({
-
 					url: venueTextPreamble + fourSquareVenueId + clientIdSecret
 							+ yyyymmdd,
 					dataType: 'json',
@@ -162,6 +159,15 @@ var viewModel = function (){
 							websiteUrl('');
 							websiteText('No website registered on FourSquare');
 						};
+
+						venue.categories.forEach(function(venueCategory){
+							category = venueCategory.shortName;
+							self.categories.push(category);
+							console.log(self.categories());
+
+						});
+
+						showMe(true);
 						restaurantName(venue.name);
 					},
 					error: function(){

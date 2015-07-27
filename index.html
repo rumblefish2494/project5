@@ -64,6 +64,10 @@
 			<div class='col-md-4 details' data-bind='img'>
 				<img class='siteImage' data-bind='attr: { src: img }'>
 				<h2 data-bind='text: restaurantName'></h2>
+				<h4 data-bind='visible: showMe'>Restaurant Category:</h4>
+				<ul data-bind="foreach: { data: categories, as: 'category' }">
+					<li data-bind='text: category, visible: showMe'></li>
+				</ul>
 				<a id='link' data-bind='text: websiteText, attr: { href: websiteUrl }' target='_blank'></a><br>
 				<a id='link' data-bind='text: menuText, attr: { href: menuUrl }' target='_blank'></a>
 			</div>
