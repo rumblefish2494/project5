@@ -55,17 +55,21 @@ var model = {
 			address: '80 E Victorian Ave, Sparks, NV'
 		},
 		{
-			name: 'Burger Me',
-			address: '6280 Sharlands Ave, Reno, NV'
-		},
-		{
 			name: 'Beaujolais',
 			address: '753 Riverside Dr, Reno, NV'
 		},
 		{
 			name: 'Pegs Glorified Ham N Eggs',
 			address: '6300 Mae Anne Ave, Reno, NV'
-		}
+		},
+		{
+			name: 'Centro Bar & Kitchen',
+			address: '236 California Ave, Reno, NV'
+		},
+		{
+			name: "The Brewer's Cabinet",
+			address: '475 S Arlington Ave, Reno, NV'
+		},
 	]
 };
 
@@ -92,6 +96,10 @@ var viewModel = function (){
 	var self = this;
 	var uppercaseName;
 	var ymd = model.date();
+	var queryTextPreamble = 'https://api.foursquare.com/v2/venues/search?query=';
+	var venueTextPreamble = 'https://api.foursquare.com/v2/venues/';
+	var clientIdSecret = '&client_id=5GCBYWBXFXKG2X0KPKQE4YLOBPD2PYX1RRRE11EGRDG41WBW&client_secret=JQGGN4IDCCFZZW1A4HQFY513DIC4N3AJETVXVK0ZNFBLPLYA';
+	var yyyymmdd = '&v=' + ymd;
 
 	//for infoWindow used in showDetails()
 	var iwContent;
@@ -135,10 +143,7 @@ var viewModel = function (){
 	};
 
 	self.displayDetails = function(place) {
-		var queryTextPreamble = 'https://api.foursquare.com/v2/venues/search?query=';
-		var venueTextPreamble = 'https://api.foursquare.com/v2/venues/';
-		var clientIdSecret = '&client_id=5GCBYWBXFXKG2X0KPKQE4YLOBPD2PYX1RRRE11EGRDG41WBW&client_secret=JQGGN4IDCCFZZW1A4HQFY513DIC4N3AJETVXVK0ZNFBLPLYA';
-		var yyyymmdd = '&v=' + ymd;
+
 		var fourSquareVenueId;
 		categories([]);
 		self.img('');
@@ -159,69 +164,79 @@ var viewModel = function (){
 			dataType: 'json',
 			success: function(data) {
 				if(data.response.venues[0] != undefined ) {
-					fourSquareVenueId = data.response.venues[0].id + '?',
+					getFoursquareObject(fourSquareVenueId = data.response.venues[0].id + '?', place);
+					console.log(place.response);
 					//once venue ID is obtained run another ajax request to get the complete object for that venue
-					$.ajax({
-						url: venueTextPreamble + fourSquareVenueId + clientIdSecret
-								+ yyyymmdd,
-						dataType: 'json',
-						success: function(data){
-
-							console.log(data);
-							venue = data.response.venue;
-							console.log(venue);
-
-
-							if( 'menu' in venue ) {
-								menuUrl(venue.menu.url);
-								menuText( place.name.toString() + ' Menu' );
-							} else {
-								menuUrl('');
-								menuText( 'No menu registered on FourSquare' );
-							};
-
-							if('bestPhoto' in venue ) {
-								img(venue.bestPhoto.prefix + '350x275' + venue.bestPhoto.suffix);
-							} else {
-								img('');
-								imgText('No Image available');
-							};
-
-							if('url' in venue ){
-								websiteUrl(venue.url);
-								websiteText('Website');
-							} else {
-								websiteUrl('');
-								websiteText('No website registered on FourSquare');
-							};
-
-							venue.categories.forEach(function(venueCategory){
-								category = venueCategory.shortName;
-								self.categories.push(category);
-								console.log(self.categories());
-
-							});
-
-							showMe(true);
-							self.restaurantName(venue.name);
-							self.restaurantAddress(venue.location.address + ', ' + venue.location.city);
-							self.restaurantPhone(venue.contact.formattedPhone);
-							self.restaurantStatus(venue.hours.status);
-
-						},
-						error: function(){
-							fourSquareError();
-						}
-					});
 				} else {
-					fourSquareError();
-				}
+				fourSquareError();
+				};
 			},
-
 			error: function(){
 					fourSquareError();
 			}
 		});
+	};
+
+	self.getFoursquareObject = function(fourSquareVenueId, place) {
+		$.ajax({
+			url: venueTextPreamble + fourSquareVenueId + clientIdSecret
+					+ yyyymmdd,
+			dataType: 'json',
+			success: function(data){
+
+				venue = data.response.venue;
+				showMe(true);
+				self.restaurantName(venue.name);
+				console.log(venue);
+
+				if( 'menu' in venue ) {
+					menuUrl(venue.menu.url);
+					menuText( place.name.toString() + ' Menu' );
+				} else {
+					menuUrl('');
+					menuText( 'No menu registered on FourSquare' );
+				};
+
+				if('bestPhoto' in venue ) {
+					img(venue.bestPhoto.prefix + '350x275' + venue.bestPhoto.suffix);
+				} else {
+					img('');
+					imgText('No Image available');
+				};
+
+				if('url' in venue ){
+					websiteUrl(venue.url);
+					websiteText('Website');
+				} else {
+					websiteUrl('');
+					websiteText('No website registered on FourSquare');
+				};
+
+				if( 'address' in  venue.location ) {
+					self.restaurantAddress( venue.location.address + ', ' +	 venue.location.city );
+				} else {
+					self.restaurantAddress( venue.location.city );
+				};
+
+				if( 'hours' in venue ) {
+					self.restaurantStatus(venue.hours.status);
+				};
+
+				self.restaurantPhone(venue.contact.formattedPhone);
+
+
+				//go through foursquare array for category of restaurants
+				//collect all listed for use in app
+				venue.categories.forEach(function(venueCategory){
+					category = venueCategory.shortName;
+					self.categories.push(category);
+				});
+			},
+			error: function(){
+				fourSquareError();
+			}
+		});
+
 	};
 
 	self.fourSquareError = function() {
@@ -229,21 +244,13 @@ var viewModel = function (){
 	};
 
 	self.showMarkerWindow = function(data) {
-
-		console.log(data.infowindow.content);
-		data.marker.setAnimation(google.maps.Animation.BOUNCE);
 		data.infowindow.content = '<div id="content">' + '<h4 class="heading">' + data.name + '</h4></div>';
-		console.log(data.infowindow.content);
 		data.infowindow.open(map, data.marker);
-
-
 	};
 	self.hideMarkerWindow = function(data, element) {
-		data.marker.setAnimation(null);
 		data.infowindow.close(map, data.marker);
 	};
 };
-
 
 //initialize google map using model coordinates
 var geocoder;
@@ -275,6 +282,21 @@ function getMarkers(){
       				content: ''
 
 		        });
+		        //create listener to show info on marker click
+		        google.maps.event.addListener(marker, 'click', function() {
+			    	$('li:contains(' + marker.title + ')').trigger('click');
+			    	console.log(marker.title)
+			  	});
+
+		        google.maps.event.addListener(marker, 'mouseover', function() {
+			    	$('li:contains(' + marker.title + ')').trigger('mouseover');
+			    	console.log(marker.title)
+			  	});
+
+			  	google.maps.event.addListener(marker, 'mouseout', function() {
+			    	$('li:contains(' + marker.title + ')').trigger('mouseout');
+			    	console.log(marker.title)
+			  	});
 
 		        squid.addMarker(marker, infowindow, index);
 		    } else {
@@ -282,6 +304,8 @@ function getMarkers(){
 		    };
         });
 	});
+
+
 
 };
 

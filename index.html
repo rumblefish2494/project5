@@ -5,6 +5,18 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<style>
+		.titleBar {
+			background-color: black;
+			color: white;
+		}
+		form input {
+			color: black;
+		}
+		.map {
+			border-style: solid;
+			border-width: 2px;
+			border-color: black;
+		}
 		.bindMe li:hover {
 			color: red;
 			font-weight: bold;
@@ -13,21 +25,13 @@
 		.col-md-2{
 			border-style: solid;
 			border-width: 1px;
-			border-color: red;
+			border-color: black;
 		}
 
-		.col-md-4{
-			border-style: solid;
-			border-width: 1px;
-			border-color: red;
-		}
 
 		.col-md-6 {
 			width: 100%;
 			height: 100%;
-			border-style: solid;
-			border-width: 1px;
-			border-color: red;
 		}
 
 		html, body, .container, .map, #map-canvas {
@@ -47,12 +51,16 @@
 </head>
 <body>
 	<div class='container'>
-		<div class='row'>
-			<div class='searchArea col-md-12'>
+		<div class='row titleBar'>
+			<div class='searchArea col-md-3'>
 				<form>
 					Search:<br>
-					<input type="text" data-bind="textInput: filterText, event: {keyup: filterRestaurant}">
+					<input id='inputField' type="text" data-bind="textInput: filterText, event: {keyup: filterRestaurant}">
 				</form>
+			</div>
+			<div class='aboutPage col-md-9'>
+				<h2 id='pageInfo'>New to Reno or just visiting?</h2>
+				<h5 id='pageInfo'>Here are some local restaurants worth checking out!</h5>
 			</div>
 		</div>
 		<div class='row map'>
