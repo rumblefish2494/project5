@@ -5,7 +5,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<style>
-		li:hover {
+		.bindMe li:hover {
 			color: red;
 			font-weight: bold;
 		}
@@ -62,8 +62,11 @@
 				</ul>
 			</div>
 			<div class='col-md-4 details' data-bind='img'>
-				<img class='siteImage' data-bind='attr: { src: img }'>
+				<img class='siteImage' data-bind='attr: { src: img, alt: imgText }'>
 				<h2 data-bind='text: restaurantName'></h2>
+				<h5 data-bind='text: restaurantAddress'></h5>
+				<h5 data-bind='text: restaurantPhone'></h5>
+				<h4 data-bind='text: restaurantStatus'></h5>
 				<h4 data-bind='visible: showMe'>Restaurant Category:</h4>
 				<ul data-bind="foreach: { data: categories, as: 'category' }">
 					<li data-bind='text: category, visible: showMe'></li>

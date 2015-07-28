@@ -49,8 +49,23 @@ var model = {
 			name: 'Sup Restaurant',
 			address: '669 S Virginia St, Reno, NV',
 			phone: '775.324.4787'
+		},
+		{
+			name: "BJ's BBQ",
+			address: '80 E Victorian Ave, Sparks, NV'
+		},
+		{
+			name: 'Burger Me',
+			address: '6280 Sharlands Ave, Reno, NV'
+		},
+		{
+			name: 'Beaujolais',
+			address: '753 Riverside Dr, Reno, NV'
+		},
+		{
+			name: 'Pegs Glorified Ham N Eggs',
+			address: '6300 Mae Anne Ave, Reno, NV'
 		}
-
 	]
 };
 
@@ -85,8 +100,13 @@ var viewModel = function (){
 	self.categories = ko.observableArray([]);
 	self.showMe = ko.observable(false);
 	self.img = ko.observable('');
+	self.imgText = ko.observable('');
 	self.photos = [];
 	self.restaurantName = ko.observable('');
+	self.restaurantAddress = ko.observable('');
+	self.restaurantPhone = ko.observable('');
+	self.restaurantStatus = ko.observable('');
+	self.restaurantHours = ko.observable('');
 	self.menuUrl = ko.observable('');
 	self.menuText = ko.observable('');
 	self.websiteUrl = ko.observable('');
@@ -121,65 +141,91 @@ var viewModel = function (){
 		var yyyymmdd = '&v=' + ymd;
 		var fourSquareVenueId;
 		categories([]);
+		self.img('');
+		self.showMe(false);
+		self.menuUrl('');
+		self.menuText('');
+		self.websiteUrl('');
+		self.websiteText('');
+		self.restaurantName('');
+		self.restaurantAddress('');
+		self.restaurantPhone('');
+		self.restaurantStatus('');
+
 		//ajax get foursquare venu ID in order to obtaen complete venue information object
 		$.ajax({
 			url: queryTextPreamble + place.name + '&near=' + place.address + '&intent=match' + clientIdSecret
 			       + yyyymmdd,
 			dataType: 'json',
 			success: function(data) {
-				fourSquareVenueId = data.response.venues[0].id + '?',
-				//once venue ID is obtained run another ajax request to get the complete object for that venue
-				$.ajax({
-					url: venueTextPreamble + fourSquareVenueId + clientIdSecret
-							+ yyyymmdd,
-					dataType: 'json',
-					success: function(data){
-						console.log(data);
-						venue = data.response.venue;
+				if(data.response.venues[0] != undefined ) {
+					fourSquareVenueId = data.response.venues[0].id + '?',
+					//once venue ID is obtained run another ajax request to get the complete object for that venue
+					$.ajax({
+						url: venueTextPreamble + fourSquareVenueId + clientIdSecret
+								+ yyyymmdd,
+						dataType: 'json',
+						success: function(data){
 
-						if( 'menu' in venue ) {
-							menuUrl(venue.menu.url);
-							menuText( place.name.toString() + ' Menu' );
-						} else {
-							menuUrl('');
-							menuText( 'No menu registered on FourSquare' );
-						};
+							console.log(data);
+							venue = data.response.venue;
+							console.log(venue);
 
-						if('bestPhoto' in venue ) {
-							img(venue.bestPhoto.prefix + '350x275' + venue.bestPhoto.suffix);
-						} else {
-							img('No Image');
+
+							if( 'menu' in venue ) {
+								menuUrl(venue.menu.url);
+								menuText( place.name.toString() + ' Menu' );
+							} else {
+								menuUrl('');
+								menuText( 'No menu registered on FourSquare' );
+							};
+
+							if('bestPhoto' in venue ) {
+								img(venue.bestPhoto.prefix + '350x275' + venue.bestPhoto.suffix);
+							} else {
+								img('');
+								imgText('No Image available');
+							};
+
+							if('url' in venue ){
+								websiteUrl(venue.url);
+								websiteText('Website');
+							} else {
+								websiteUrl('');
+								websiteText('No website registered on FourSquare');
+							};
+
+							venue.categories.forEach(function(venueCategory){
+								category = venueCategory.shortName;
+								self.categories.push(category);
+								console.log(self.categories());
+
+							});
+
+							showMe(true);
+							self.restaurantName(venue.name);
+							self.restaurantAddress(venue.location.address + ', ' + venue.location.city);
+							self.restaurantPhone(venue.contact.formattedPhone);
+							self.restaurantStatus(venue.hours.status);
+
+						},
+						error: function(){
+							fourSquareError();
 						}
-
-						if('url' in venue ){
-							console.log('it says so');
-							websiteUrl(venue.url);
-							websiteText('Website');
-						} else {
-							websiteUrl('');
-							websiteText('No website registered on FourSquare');
-						};
-
-						venue.categories.forEach(function(venueCategory){
-							category = venueCategory.shortName;
-							self.categories.push(category);
-							console.log(self.categories());
-
-						});
-
-						showMe(true);
-						restaurantName(venue.name);
-					},
-					error: function(){
-						console.log('foursquare not available');
-					}
-				});
+					});
+				} else {
+					fourSquareError();
+				}
 			},
 
 			error: function(){
-					console.log('foursquare not available');
+					fourSquareError();
 			}
 		});
+	};
+
+	self.fourSquareError = function() {
+		self.restaurantStatus('Foursquare is not currently available');
 	};
 
 	self.showMarkerWindow = function(data) {
